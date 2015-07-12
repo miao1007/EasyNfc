@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="miao1007.github.com.easynfc">
+
+  <!--Use NFC feature and Permissions-->
+  <uses-permission android:name="android.permission.NFC"/>
+  <uses-feature
+      android:name="android.hardware.nfc"
+      android:required="true"/>
+
+
+  <application
+      android:allowBackup="true"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/app_name"
+
+      android:theme="@style/AppTheme">
+    <activity
+        android:name=".MainActivity"
+        android:label="@string/app_name">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+
+    <!--NFC Scanner activity-->
+    <meta-data
+        android:name="android.nfc.disable_beam_default"
+        android:value="true"/>
+    <activity
+        android:name=".NfcscannerActivity"
+        android:launchMode="singleInstance"
+        android:alwaysRetainTaskState="true"
+        android:label="@string/title_activity_nfcscanner">
+      <intent-filter>
+        <action android:name="android.nfc.action.TECH_DISCOVERED"/>
+        <!--<action android:name="android.nfc.action.TAG_DISCOVERED"/>-->
+        <!--<action android:name="android.nfc.action.NDEF_DISCOVERED"/>-->
+      </intent-filter>
+
+      <!--filters required for TECH_DISCOVERED-->
+      <meta-data
+          android:name="android.nfc.action.TECH_DISCOVERED"
+          android:resource="@xml/nfc_tech_filter"/>
+    </activity>
+  </application>
+
+</manifest>
