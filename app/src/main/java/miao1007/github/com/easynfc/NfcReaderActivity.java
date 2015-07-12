@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2015. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
+ */
+
 package miao1007.github.com.easynfc;
 
 import android.content.Intent;
@@ -11,6 +19,7 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.squareup.leakcanary.RefWatcher;
 import java.util.Arrays;
 import miao1007.github.com.easynfc.pdus.APDUManager;
 import miao1007.github.com.easynfc.pdus.ResponseAPDU;
@@ -35,6 +44,12 @@ public class NfcReaderActivity extends AppCompatActivity {
 
   APDUManager manager;
   Tag tag;
+
+  @Override protected void onDestroy() {
+    super.onDestroy();
+    RefWatcher refWatcher = GlobalContext.getRefWatcher(this);
+    refWatcher.watch(this);
+  }
 
   @OnClick(R.id.btn_send) void onClick() {
     Subscriber subscriber = new Subscriber<ResponseAPDU>() {
@@ -63,7 +78,7 @@ public class NfcReaderActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_nfcscanner);
     ButterKnife.bind(this);
-    manager = APDUManager.getInstance(this);
+    manager = new APDUManager(this);
     handleIntent(getIntent());
   }
 

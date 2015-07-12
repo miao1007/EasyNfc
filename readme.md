@@ -1,6 +1,8 @@
-##EasyNfc
-A NfcReaderLib
-----------
+EasyNfc
+-----
+
+A NfcReaderLib for android
+
 
 ##Features
 * RxAndroid Supported, It's a great sample to learn RxAndroid.

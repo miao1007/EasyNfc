@@ -30,6 +30,8 @@
     <meta-data
         android:name="android.nfc.disable_beam_default"
         android:value="true"/>
+    <!-- screenOrientation: fix intend lost when orientation changed -->
+    <!--android:screenOrientation="portrait"-->
     <activity
         android:name=".NfcReaderActivity"
         android:launchMode="singleInstance"
@@ -38,13 +40,10 @@
 
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
-
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
       <intent-filter>
         <action android:name="android.nfc.action.TECH_DISCOVERED"/>
-        <!--<action android:name="android.nfc.action.TAG_DISCOVERED"/>-->
-        <!--<action android:name="android.nfc.action.NDEF_DISCOVERED"/>-->
       </intent-filter>
 
       <!--filters required for TECH_DISCOVERED-->
