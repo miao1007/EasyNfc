@@ -43,14 +43,14 @@ public class ResponseAPDU {
     return createFromPdu(bytes, bytes.length);
   }
 
-  public static ResponseAPDU createFromPdu(byte[] rawpdus, int newLength) {
+  public static ResponseAPDU createFromPdu(byte[] raw_pdus, int newLength) {
     ResponseAPDU apdu = new ResponseAPDU();
     if (newLength > 2) {
-      apdu.data = Arrays.copyOf(rawpdus, newLength - SW_SIZE);
+      apdu.data = Arrays.copyOf(raw_pdus, newLength - SW_SIZE);
       apdu.sw = Util.bytesToShort(
-          new byte[] { rawpdus[newLength - SW_SIZE], rawpdus[newLength - SW_SIZE - 1] });
+          new byte[] { raw_pdus[newLength - SW_SIZE], raw_pdus[newLength - SW_SIZE - 1] });
     } else {
-      apdu.sw = Util.bytesToShort(rawpdus);
+      apdu.sw = Util.bytesToShort(raw_pdus);
     }
     return apdu;
   }

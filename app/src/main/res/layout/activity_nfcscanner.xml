@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="miao1007.github.com.easynfc.NfcscannerActivity">
+    tools:context="miao1007.github.com.easynfc.NfcReaderActivity">
 
   <!--<EditText-->
       <!--android:id="@+id/apdu_cla"-->

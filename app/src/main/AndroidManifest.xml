@@ -11,6 +11,7 @@
 
   <application
       android:allowBackup="true"
+      android:name=".GlobalContext"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
 
@@ -19,9 +20,9 @@
         android:name=".MainActivity"
         android:label="@string/app_name">
       <!--<intent-filter>-->
-        <!--<action android:name="android.intent.action.MAIN"/>-->
+      <!--<action android:name="android.intent.action.MAIN"/>-->
 
-        <!--<category android:name="android.intent.category.LAUNCHER"/>-->
+      <!--<category android:name="android.intent.category.LAUNCHER"/>-->
       <!--</intent-filter>-->
     </activity>
 
@@ -30,7 +31,7 @@
         android:name="android.nfc.disable_beam_default"
         android:value="true"/>
     <activity
-        android:name=".NfcscannerActivity"
+        android:name=".NfcReaderActivity"
         android:launchMode="singleInstance"
         android:alwaysRetainTaskState="true"
         android:label="@string/title_activity_nfcscanner">

@@ -16,12 +16,11 @@ import miao1007.github.com.easynfc.pdus.APDUManager;
 import miao1007.github.com.easynfc.pdus.ResponseAPDU;
 import miao1007.github.com.utils.LogUtils;
 import miao1007.github.com.utils.Util;
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class NfcscannerActivity extends AppCompatActivity {
+public class NfcReaderActivity extends AppCompatActivity {
 
   public static final String TAG = LogUtils.makeLogTag(MainActivity.class);
 
@@ -52,32 +51,12 @@ public class NfcscannerActivity extends AppCompatActivity {
         mTextView_response.setText(responseAPDU.toString());
       }
     };
-    //byte cla = Util.hexStringToByte(mEditText_cla.getText().toString());
-    //byte ans = Util.hexStringToByte(mEditText_ans.getText().toString());
-    //byte p1 = Util.hexStringToByte(mEditText_p1.getText().toString());
-    //byte p2 = Util.hexStringToByte(mEditText_p2.getText().toString());
-    // sample : 00a404000e315041592e5359532e444446303100
     byte[] data = Util.hexStringToByteArray(mEditText_data.getText().toString());
-    Log.d(TAG, Util.byteArraytoHexString(data));
-    //RequestAPDU apdu = new RequestAPDU.Builder().setCla(cla)
-    //    .setIns(ans)
-    //    .setP1(p1)
-    //    .setP2(p2)
-    //    .setData(data)
-    //    .builder();
-    //Log.d(TAG, Util.byteArraytoHexString(apdu.toBytes()));
-    getResponseAPDUObservable(tag, data).subscribeOn(Schedulers.newThread())
+
+    manager.getResponseAPDUObservable(tag, data)
+        .subscribeOn(Schedulers.newThread())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(subscriber);
-  }
-
-  @Override protected void onPause() {
-    super.onPause();
-  }
-
-  @Override protected void onResume() {
-    super.onResume();
-    manager.onResume();
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -103,15 +82,5 @@ public class NfcscannerActivity extends AppCompatActivity {
     tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
     Log.d(TAG, "Id:" + Util.byteArraytoHexString(tag.getId()));
     Log.d(TAG, "TechList:" + Arrays.toString(tag.getTechList()));
-  }
-
-  Observable<ResponseAPDU> getResponseAPDUObservable(final Tag tag, final byte... bytes) {
-
-    return Observable.create(new Observable.OnSubscribe<ResponseAPDU>() {
-      @Override public void call(Subscriber<? super ResponseAPDU> subscriber) {
-        subscriber.onNext(manager.getResponseFromBytes(tag, bytes));
-        subscriber.onCompleted();
-      }
-    });
   }
 }
