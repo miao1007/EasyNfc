@@ -85,38 +85,25 @@ public class RequestAPDU {
     this.le = le;
   }
 
-  //public void readRecord(int sfi, int index) throws IOException {
-  //  final byte[] cmd = { (byte) 0x00, // CLA Class
-  //      (byte) 0xB2, // INS Instruction
-  //      (byte) index, // P1 Parameter 1
-  //      (byte) ((sfi << 3) | 0x04), // P2 Parameter 2
-  //      (byte) 0x00, // Le
-  //  };
-  //}
-
-  public static byte[] selectByID(byte... id) {
-    ByteBuffer buff = ByteBuffer.allocate(id.length + 6);
-    buff.put((byte) 0x00) // CLA Class
-        .put((byte) 0xA4) // INS Instruction
-        .put((byte) 0x00) // P1 Parameter 1
-        .put((byte) 0x00) // P2 Parameter 2
-        .put((byte) id.length) // Lc
-        .put(id).put((byte) 0x00); // Le
-
-    return buff.array();
-  }
-
   public byte[] toBytes() {
-    ByteBuffer buff = ByteBuffer.allocate(this.data.length + 6);
-    buff.put(this.cla) // CLA Class
-        .put(this.ins) // INS Instruction
-        .put(this.p1) // P1 Parameter 1
-        .put(this.p2) // P2 Parameter 2
-        .put(this.lc) // Lc
-        .put(this.data).put(this.le); // Le
-    return buff.array();
+    if (data == null || this.data.length == 0) {
+      ByteBuffer buff = ByteBuffer.allocate(4);
+      buff.put(this.cla) // CLA Class
+          .put(this.ins) // INS Instruction
+          .put(this.p1) // P1 Parameter 1
+          .put(this.p2); // P2 Parameter 2
+      return buff.array();
+    } else {
+      ByteBuffer buff = ByteBuffer.allocate(this.data.length + 6);
+      buff.put(this.cla) // CLA Class
+          .put(this.ins) // INS Instruction
+          .put(this.p1) // P1 Parameter 1
+          .put(this.p2) // P2 Parameter 2
+          .put(this.lc) // Lc
+          .put(this.data).put(this.le); // Le
+      return buff.array();
+    }
   }
-
 
   public static class Builder {
     private byte cla;
@@ -147,22 +134,17 @@ public class RequestAPDU {
       return this;
     }
 
-    public Builder setLc(byte lc) {
-      this.lc = lc;
-      return this;
-    }
-
     public Builder setData(byte[] data) {
+      if (data.length == 0) {
+        return this;
+      }
       this.data = data;
+      this.le = (byte) 0x00;
+      this.lc = (byte) data.length;
       return this;
     }
 
-    public Builder setLe(byte le) {
-      this.le = le;
-      return this;
-    }
-
-    public RequestAPDU create() {
+    public RequestAPDU builder() {
       ensureSaneDefaults();
       return new RequestAPDU(cla, ins, p1, p2, lc, data, le);
     }

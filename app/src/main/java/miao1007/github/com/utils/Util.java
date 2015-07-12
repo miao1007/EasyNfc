@@ -73,11 +73,11 @@ public final class Util {
     return toIntR(b, b.length - 1, b.length);
   }
 
-  public static String toHexString(byte... d) {
-    return (d == null || d.length == 0) ? "" : toHexString(d, 0, d.length);
+  public static String byteArraytoHexString(byte... d) {
+    return (d == null || d.length == 0) ? "00" : byteArraytoHexString(d, 0, d.length);
   }
 
-  public static String toHexString(byte[] d, int s, int n) {
+  public static String byteArraytoHexString(byte[] d, int s, int n) {
     final char[] ret = new char[n * 2];
     final int e = s + n;
 
@@ -158,5 +158,31 @@ public final class Util {
     returnByteArray[0] = (byte) (value & 0xff);
     returnByteArray[1] = (byte) ((value >>> 8) & 0xff);
     return returnByteArray;
+  }
+
+  public static String shortToHexString(short value) {
+    //StringBuilder builder = new StringBuilder(2);
+    //builder.append(value )
+    return String.format("%02X", ((short) value));
+  }
+
+  public static byte[] hexStringToByteArray(String s) {
+    if (s == null || s.isEmpty() || (s.length() % 2 != 0)) {
+      return new byte[] {};
+    }
+    int len = s.length();
+    byte[] data = new byte[len / 2];
+    for (int i = 0; i < len; i += 2) {
+      data[i / 2] =
+          (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
+    }
+    return data;
+  }
+
+  public static byte hexStringToByte(String s) {
+    if (s == null || s.isEmpty()) {
+      return (byte) 0x00;
+    }
+    return (byte) ((Character.digit(s.charAt(0), 16) << 4) + Character.digit(s.charAt(1), 16));
   }
 }

@@ -18,11 +18,11 @@
     <activity
         android:name=".MainActivity"
         android:label="@string/app_name">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
+      <!--<intent-filter>-->
+        <!--<action android:name="android.intent.action.MAIN"/>-->
 
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
+        <!--<category android:name="android.intent.category.LAUNCHER"/>-->
+      <!--</intent-filter>-->
     </activity>
 
     <!--NFC Scanner activity-->
@@ -34,6 +34,12 @@
         android:launchMode="singleInstance"
         android:alwaysRetainTaskState="true"
         android:label="@string/title_activity_nfcscanner">
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
       <intent-filter>
         <action android:name="android.nfc.action.TECH_DISCOVERED"/>
         <!--<action android:name="android.nfc.action.TAG_DISCOVERED"/>-->

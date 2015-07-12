@@ -73,8 +73,8 @@ public class ResponseAPDU {
 
   @Override public String toString() {
     return "ResponseAPDU{" +
-        "data=0x" + Util.toHexString(data) +
-        ", sw=0x" + String.format("%02X", sw) +
+        "data=0x" + Util.byteArraytoHexString(data) +
+        ", sw=0x" + Util.shortToHexString(sw) +
         '}';
   }
 }

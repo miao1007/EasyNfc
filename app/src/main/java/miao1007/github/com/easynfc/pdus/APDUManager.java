@@ -32,8 +32,6 @@ public class APDUManager {
     initial(this.activity);
   }
 
-
-
   public static APDUManager getInstance(Activity activity) {
     if (instance == null) {
       synchronized (APDUManager.class) {
@@ -47,7 +45,11 @@ public class APDUManager {
 
   public void onResume() {
     if ((mNfcAdapter != null) && (activity != null)) {
-      mNfcAdapter.disableForegroundDispatch(activity);
+      //try {
+      //  mNfcAdapter.disableForegroundDispatch(activity);
+      //} catch (IllegalStateException e) {
+      //  e.printStackTrace();
+      //}
     }
   }
 
