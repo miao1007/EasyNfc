@@ -14,27 +14,18 @@
       android:name=".GlobalContext"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
-
       android:theme="@style/AppTheme">
-    <activity
-        android:name=".MainActivity"
-        android:label="@string/app_name">
-      <!--<intent-filter>-->
-      <!--<action android:name="android.intent.action.MAIN"/>-->
 
-      <!--<category android:name="android.intent.category.LAUNCHER"/>-->
-      <!--</intent-filter>-->
-    </activity>
 
     <!--NFC Scanner activity-->
     <meta-data
         android:name="android.nfc.disable_beam_default"
         android:value="true"/>
-    <!-- screenOrientation: fix intend lost when orientation changed -->
-    <!--android:screenOrientation="portrait"-->
+
+
     <activity
         android:name=".NfcReaderActivity"
-        android:launchMode="singleInstance"
+        android:launchMode="singleTop"
         android:alwaysRetainTaskState="true"
         android:label="@string/title_activity_nfcscanner">
 
@@ -42,6 +33,7 @@
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
+
       <intent-filter>
         <action android:name="android.nfc.action.TECH_DISCOVERED"/>
       </intent-filter>

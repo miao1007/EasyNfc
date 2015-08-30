@@ -7,6 +7,10 @@ import miao1007.github.com.easynfc.pdus.RequestAPDU;
  */
 public interface Card {
 
+  String SELECT_BY_NAME = "00a404000e315041592e5359532e444446303100";
+  String READ_OPERATION_FILE = "00b0850000"; //0x00000080 | (5 & 0x1F)
+  String READ_INFO_FILE = "00b0840000"; //0x00000080 | (4 & 0x1F)
+
   /**
    * 获取卡号
    * @param apdu 查询命令

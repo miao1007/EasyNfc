@@ -7,9 +7,10 @@ import miao1007.github.com.easynfc.pdus.RequestAPDU;
  * Created by leon on 7/11/15.
  * 重庆轨道交通一卡通
  */
-public class CQEcashCard implements Card {
+public class CQEcashCard {
 
   public static final byte[] cmd_getbanlance = {
+
       (byte) 0x80, // CLA Class
       (byte) 0x5C, // INS Instruction
       (byte) 0x00, // P1 Parameter 1
@@ -48,27 +49,27 @@ public class CQEcashCard implements Card {
     return buff.array();
   }
 
-  @Override public long getNumber(RequestAPDU apdu) {
+  public long getNumber(RequestAPDU apdu) {
     return 0;
   }
 
-  @Override public long getVersion(RequestAPDU apdu) {
+  public long getVersion(RequestAPDU apdu) {
     return 0;
   }
 
-  @Override public long getValidTimeStart(RequestAPDU apdu) {
+  public long getValidTimeStart(RequestAPDU apdu) {
     return 0;
   }
 
-  @Override public long getValidTimeEnd(RequestAPDU apdu) {
+  public long getValidTimeEnd(RequestAPDU apdu) {
     return 0;
   }
 
-  @Override public long getBalance(RequestAPDU apdu) {
-    return 0;
+  public static byte[] getBalance() {
+    return get_record;
   }
 
-  @Override public Object[] getLog(RequestAPDU apdu) {
+  public Object[] getLog(RequestAPDU apdu) {
     return new Object[0];
   }
 }

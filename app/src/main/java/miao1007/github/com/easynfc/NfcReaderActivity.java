@@ -9,8 +9,8 @@
 package miao1007.github.com.easynfc;
 
 import android.content.Intent;
-import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,19 +19,19 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import com.squareup.leakcanary.RefWatcher;
-import java.util.Arrays;
+import miao1007.github.com.easynfc.card.CQEcashCard;
 import miao1007.github.com.easynfc.pdus.APDUManager;
-import miao1007.github.com.easynfc.pdus.ResponseAPDU;
 import miao1007.github.com.utils.LogUtils;
-import miao1007.github.com.utils.Util;
+import okio.ByteString;
+import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class NfcReaderActivity extends AppCompatActivity {
 
-  public static final String TAG = LogUtils.makeLogTag(MainActivity.class);
+  public static final String TAG = LogUtils.makeLogTag(NfcReaderActivity.class);
 
   //@Bind(R.id.apdu_cla) EditText mEditText_cla;
   //@Bind(R.id.apdu_ans) EditText mEditText_ans;
@@ -45,33 +45,8 @@ public class NfcReaderActivity extends AppCompatActivity {
   APDUManager manager;
   Tag tag;
 
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    RefWatcher refWatcher = GlobalContext.getRefWatcher(this);
-    refWatcher.watch(this);
-  }
-
   @OnClick(R.id.btn_send) void onClick() {
-    Subscriber subscriber = new Subscriber<ResponseAPDU>() {
-      @Override public void onCompleted() {
-        Log.d(TAG, "onCompleted:");
-      }
 
-      @Override public void onError(Throwable e) {
-        mTextView_response.setText(e.getMessage());
-      }
-
-      @Override public void onNext(ResponseAPDU responseAPDU) {
-        Log.d(TAG, "onNext:" + responseAPDU.toString());
-        mTextView_response.setText(responseAPDU.toString());
-      }
-    };
-    byte[] data = Util.hexStringToByteArray(mEditText_data.getText().toString());
-
-    manager.getResponseAPDUObservable(tag, data)
-        .subscribeOn(Schedulers.newThread())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(subscriber);
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -79,23 +54,56 @@ public class NfcReaderActivity extends AppCompatActivity {
     setContentView(R.layout.activity_nfcscanner);
     ButterKnife.bind(this);
     manager = new APDUManager(this);
-    handleIntent(getIntent());
+    onNewIntent(getIntent());
   }
 
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
-    Log.d(TAG, "onNewIntent");
-    handleIntent(intent);
+    manager.getTag(intent)
+        .flatMap(new Func1<Tag, Observable<IsoDep>>() {
+          @Override public Observable<IsoDep> call(Tag tag) {
+            return manager.getIsoDep(tag, 4000);
+          }
+        })
+        .flatMap(new Func1<IsoDep, Observable<byte[]>>() {
+          @Override public Observable<byte[]> call(IsoDep isoDep) {
+            return manager.getResponseAPDUObservable(isoDep, CQEcashCard.getBalance());
+          }
+        })
+        .map(new Func1<byte[], String>() {
+          @Override public String call(byte[] bytes) {
+            return ByteString.of(bytes).utf8();
+          }
+        })
+        .single(new Func1<String, Boolean>() {
+          @Override public Boolean call(String s) {
+            return s.endsWith("9000");
+          }
+        })
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Subscriber<String>() {
+          @Override public void onCompleted() {
+            Log.d(TAG, "onCompleted");
+          }
+
+          @Override public void onError(Throwable e) {
+            e.printStackTrace();
+          }
+
+          @Override public void onNext(String isoDep) {
+            Log.d(TAG, "onNext" + isoDep);
+          }
+        });
   }
 
-  private void handleIntent(Intent intent) {
-    Log.d(TAG, "handleIntent: " + intent.getAction());
-    if (!intent.getAction().equals(NfcAdapter.ACTION_TECH_DISCOVERED)) {
-      Log.d(TAG, "handleIntent: no valid action");
-      return;
-    }
-    tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-    Log.d(TAG, "Id:" + Util.byteArraytoHexString(tag.getId()));
-    Log.d(TAG, "TechList:" + Arrays.toString(tag.getTechList()));
+  @Override protected void onPause() {
+    super.onPause();
+    manager.onPause();
+  }
+
+  @Override protected void onResume() {
+    super.onResume();
+    manager.onResume();
   }
 }
