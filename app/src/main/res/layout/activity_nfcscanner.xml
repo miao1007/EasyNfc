@@ -54,9 +54,17 @@
 
   <Button android:layout_width="match_parent" android:layout_height="wrap_content"
       android:id="@+id/btn_send" android:text="send command"/>
+
+  <Button android:layout_width="match_parent" android:layout_height="wrap_content"
+      android:id="@+id/get_balance" android:text="get_balance"/>
+
+  <Button android:layout_width="match_parent" android:layout_height="wrap_content"
+      android:id="@+id/get_record" android:text="get_record"/>
+
   <TextView
       android:text="result(response apdu)"
       android:layout_width="match_parent"
+      android:singleLine="false"
       android:id="@+id/apdu_response"
       android:layout_height="wrap_content"/>
 

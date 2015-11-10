@@ -4,6 +4,7 @@
   <tech-list>
     <tech>android.nfc.tech.IsoDep</tech>
   </tech-list>
+
   <tech-list>
     <tech>android.nfc.tech.NfcF</tech>
   </tech-list>

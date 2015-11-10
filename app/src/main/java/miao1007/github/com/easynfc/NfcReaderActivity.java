@@ -10,7 +10,6 @@ package miao1007.github.com.easynfc;
 
 import android.content.Intent;
 import android.nfc.Tag;
-import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -23,10 +22,8 @@ import miao1007.github.com.easynfc.card.CQEcashCard;
 import miao1007.github.com.easynfc.pdus.APDUManager;
 import miao1007.github.com.utils.LogUtils;
 import okio.ByteString;
-import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 public class NfcReaderActivity extends AppCompatActivity {
@@ -45,8 +42,70 @@ public class NfcReaderActivity extends AppCompatActivity {
   APDUManager manager;
   Tag tag;
 
-  @OnClick(R.id.btn_send) void onClick() {
+  @OnClick(R.id.get_balance) void get_balance() {
+    Log.d(TAG, "get_balance");
+    manager.trans(ByteString.of(CQEcashCard.DFN_PSE),ByteString.of(CQEcashCard.DFN_SRV),ByteString.of(CQEcashCard.GET_BALANCE))
+        .subscribeOn(Schedulers.io())
+        .filter(string -> string.rangeEquals(0, ByteString.of((byte) 0x69, (byte) 0x82), 0, 2))//SW_SECURITY_STATUS_NOT_SATISFIED
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Subscriber<ByteString>() {
+          @Override public void onCompleted() {
+            Log.d(TAG, "onCompleted");
+          }
 
+          @Override public void onError(Throwable e) {
+            Log.d(TAG, "onError", e);
+          }
+
+          /**
+           * eg: 0x6982 => 17.10
+           * @param string
+           */
+          @Override public void onNext(ByteString string) {
+            Log.d(TAG, string.hex());
+            mTextView_response.setText(string.hex());
+          }
+        });
+  }
+
+  @OnClick(R.id.get_record) void get_record() {
+    manager.trans(ByteString.of(CQEcashCard.GET_RECORD))
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Subscriber<ByteString>() {
+          @Override public void onCompleted() {
+            Log.d(TAG, "onCompleted");
+          }
+
+          @Override public void onError(Throwable e) {
+            Log.d(TAG, "onError", e);
+          }
+
+          /**
+           * 610f4f09a0000000038698070150023f01
+           * 610f4f09a0000000038698070250023f02
+           * 610f4f09a0000000038698070350023f03
+           * 610f4f09a0000000038698070450023f04
+           * 610f4f09a0000000038698070550023f05
+           * 9000
+           * @param string
+           */
+          @Override public void onNext(ByteString string) {
+            //data[0]-data[1]:index
+            //data[2]-data[4]:over,金额溢出?
+            //    data[5]-data[8]:交易金额
+            //data[9]:如果等于0x06或者0x09，表示刷卡；否则是充值
+            //data[10]-data[15]:刷卡机或充值机编号
+            //data[16]-data[22]:日期String.format("%02X%02X.%02X.%02X %02X:%02X:%02X",data[16], data[17], data[18], data[19], data[20], data[21], data[22]);
+            //string.
+            Log.d(TAG, string.hex());
+            mTextView_response.setText(string.hex());
+          }
+        });
+  }
+
+  @OnClick(R.id.btn_send) void btn_send_cus() {
+    manager.trans(ByteString.decodeHex(mEditText_data.getText().toString()));
   }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -59,42 +118,7 @@ public class NfcReaderActivity extends AppCompatActivity {
 
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
-    manager.getTag(intent)
-        .flatMap(new Func1<Tag, Observable<IsoDep>>() {
-          @Override public Observable<IsoDep> call(Tag tag) {
-            return manager.getIsoDep(tag, 4000);
-          }
-        })
-        .flatMap(new Func1<IsoDep, Observable<byte[]>>() {
-          @Override public Observable<byte[]> call(IsoDep isoDep) {
-            return manager.getResponseAPDUObservable(isoDep, CQEcashCard.getBalance());
-          }
-        })
-        .map(new Func1<byte[], String>() {
-          @Override public String call(byte[] bytes) {
-            return ByteString.of(bytes).utf8();
-          }
-        })
-        .single(new Func1<String, Boolean>() {
-          @Override public Boolean call(String s) {
-            return s.endsWith("9000");
-          }
-        })
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Subscriber<String>() {
-          @Override public void onCompleted() {
-            Log.d(TAG, "onCompleted");
-          }
-
-          @Override public void onError(Throwable e) {
-            e.printStackTrace();
-          }
-
-          @Override public void onNext(String isoDep) {
-            Log.d(TAG, "onNext" + isoDep);
-          }
-        });
+    get_balance();
   }
 
   @Override protected void onPause() {
