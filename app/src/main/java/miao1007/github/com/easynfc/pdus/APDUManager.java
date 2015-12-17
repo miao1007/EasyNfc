@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
-import android.nfc.tech.NfcF;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresPermission;
 import android.util.Log;
@@ -18,7 +17,6 @@ import okio.ByteString;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
 /**
  * Created by leon on 7/11/15.
@@ -30,13 +28,26 @@ public class APDUManager {
 
   public static final int DEFALUT_TIMEOUT = 5000;
 
+  static IntentFilter[] NFC_FILTERS;
+  static String[][] NFC_TECHLISTS;
+
+  static {
+
+    try {
+      String[][] strings = new String[1][];
+      //最常见的卡片类型就是IsoDep
+      strings[0] = new String[] { IsoDep.class.getName() };
+      NFC_TECHLISTS = strings;
+      NFC_FILTERS =
+          new IntentFilter[] { new IntentFilter("android.nfc.action.TECH_DISCOVERED", "*/*") };
+    } catch (Exception e) {
+      e.printStackTrace();//ignored
+    }
+  }
+
   NfcAdapter mAdapter;
   Activity mActivity;
   PendingIntent pendingIntent;
-  IntentFilter tech;
-  IntentFilter[] intentFiltersArray;
-  String[][] techListsArray;
-  IsoDep isoDep;
 
   @RequiresPermission("android.permission.NFC") public APDUManager(Activity mActivity) {
 
@@ -50,19 +61,6 @@ public class APDUManager {
      */
     pendingIntent = PendingIntent.getActivity(mActivity, 0,
         new Intent(mActivity, mActivity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-    /**
-     * NFC过滤
-     */
-    tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-    try {
-
-      tech.addDataType("*/*");    /* Handles all MIME based dispatches.
-                                       You should specify only the ones that you need. */
-    } catch (IntentFilter.MalformedMimeTypeException e) {
-      throw new RuntimeException("fail", e);
-    }
-    intentFiltersArray = new IntentFilter[] { tech, };
-    techListsArray = new String[][] { new String[] { NfcF.class.getName() } };
   }
 
   Observable<NfcAdapter> getDefaultAdapter(Activity activity) {
@@ -78,6 +76,11 @@ public class APDUManager {
     });
   }
 
+  public void onNewIntent(Intent intent) {
+    Log.d(TAG, "onNewIntent:" + intent.toString());
+    mActivity.setIntent(intent);
+  }
+
   public void onPause() {
     if (mActivity != null) {
       mAdapter.disableForegroundDispatch(mActivity);
@@ -85,9 +88,8 @@ public class APDUManager {
   }
 
   public void onResume() {
-    if (mActivity != null) {
-      mAdapter.enableForegroundDispatch(mActivity, pendingIntent, intentFiltersArray,
-          techListsArray);
+    if (mActivity != null && mAdapter != null) {
+      mAdapter.enableForegroundDispatch(mActivity, pendingIntent, NFC_FILTERS, NFC_TECHLISTS);
     }
   }
 
@@ -103,7 +105,7 @@ public class APDUManager {
         Intent intent = mActivity.getIntent();
         Log.d(TAG, intent == null ? "null" : intent.toString());
         if (intent == null || intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) == null) {
-          subscriber.onError(new Throwable("intent has no valid action"));
+          subscriber.onError(new Throwable("Intent has no valid action for NFC flag"));
           subscriber.onCompleted();
           return;
         }
@@ -116,8 +118,9 @@ public class APDUManager {
     });
   }
 
-
-
+  /**
+   * 多Hex的I/O流处理
+   */
   public final Observable<ByteString> trans(final ByteString... byteString) {
     return Observable.from(byteString).flatMap(new Func1<ByteString, Observable<ByteString>>() {
       @Override public Observable<ByteString> call(ByteString byteString) {
@@ -126,8 +129,8 @@ public class APDUManager {
     });
   }
 
-  public boolean isSuccess(ByteString byteString){
-    return byteString.rangeEquals(0,ByteString.of((byte)0x90,(byte)0x00),0,2);
+  public boolean isSuccess(ByteString byteString) {
+    return byteString.rangeEquals(0, ByteString.of((byte) 0x90, (byte) 0x00), 0, 2);
   }
 
   public final Observable<ByteString> trans(final ByteString byteString) {

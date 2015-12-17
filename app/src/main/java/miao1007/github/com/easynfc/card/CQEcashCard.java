@@ -1,7 +1,6 @@
 package miao1007.github.com.easynfc.card;
 
 import java.nio.ByteBuffer;
-import miao1007.github.com.easynfc.pdus.RequestAPDU;
 
 /**
  * Created by leon on 7/11/15.
@@ -31,4 +30,29 @@ public class CQEcashCard {
       (byte) 0x04, // Le
   };
 
+  protected final static byte[] DFI_EP = { (byte) 0x10, (byte) 0x01 };
+
+
+  public static final byte[] SELECT_BY_ID = {
+      (byte) 0x00, // CLA Class
+      (byte) 0xA4, // INS Instruction
+      (byte) 0x00, // P1 Parameter 1
+      (byte) 0x00, // P2 Parameter 2
+      (byte) 0x02, // Lc
+      (byte) 0x10, // CMD
+      (byte) 0x01, // CMD
+      (byte) 0x00, // Le
+  };
+
+  //public byte[] SELECT_BY_ID() {
+  //  ByteBuffer buff = ByteBuffer.allocate(8);
+  //  buff.put((byte) 0x00) // CLA Class
+  //      .put((byte) 0xA4) // INS Instruction
+  //      .put((byte) 0x00) // P1 Parameter 1
+  //      .put((byte) 0x00) // P2 Parameter 2
+  //      .put((byte) 0x02) // Lc
+  //      .put((byte) 0x10).put((byte) 0x01).put((byte) 0x00); // Le
+  //
+  //  return buff.array();
+  //}
 }

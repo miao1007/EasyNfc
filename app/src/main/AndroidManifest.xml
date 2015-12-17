@@ -34,14 +34,13 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
 
+      <!--nfc filter-->
+      <meta-data android:name="android.nfc.action.TECH_DISCOVERED" android:resource="@xml/nfc_tech_filter" />
       <intent-filter>
-        <action android:name="android.nfc.action.TECH_DISCOVERED"/>
+        <action android:name="android.nfc.action.TECH_DISCOVERED" />
+        <action android:name="android.nfc.action.TAG_DISCOVERED" />
+        <category android:name="android.intent.category.DEFAULT" />
       </intent-filter>
-
-      <!--filters required for TECH_DISCOVERED-->
-      <meta-data
-          android:name="android.nfc.action.TECH_DISCOVERED"
-          android:resource="@xml/nfc_tech_filter"/>
     </activity>
   </application>
 

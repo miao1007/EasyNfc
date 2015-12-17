@@ -44,28 +44,28 @@ public class NfcReaderActivity extends AppCompatActivity {
 
   @OnClick(R.id.get_balance) void get_balance() {
     Log.d(TAG, "get_balance");
-    manager.trans(ByteString.of(CQEcashCard.DFN_PSE),ByteString.of(CQEcashCard.DFN_SRV),ByteString.of(CQEcashCard.GET_BALANCE))
-        .subscribeOn(Schedulers.io())
-        .filter(string -> string.rangeEquals(0, ByteString.of((byte) 0x69, (byte) 0x82), 0, 2))//SW_SECURITY_STATUS_NOT_SATISFIED
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Subscriber<ByteString>() {
-          @Override public void onCompleted() {
-            Log.d(TAG, "onCompleted");
-          }
+    manager.trans(ByteString.of(CQEcashCard.DFN_PSE), ByteString.of(CQEcashCard.SELECT_BY_ID),
+        ByteString.of(CQEcashCard.GET_BALANCE)).subscribeOn(Schedulers.io())
+        //.single(string -> !string.rangeEquals(0, ByteString.of((byte) 0x90, (byte) 0x00), 0, 2))
+        .observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<ByteString>() {
+      @Override public void onCompleted() {
+        Log.d(TAG, "onCompleted");
+      }
 
-          @Override public void onError(Throwable e) {
-            Log.d(TAG, "onError", e);
-          }
+      @Override public void onError(Throwable e) {
+        Log.d(TAG, "onError", e);
+        mTextView_response.setText(e.getMessage());
+      }
 
-          /**
-           * eg: 0x6982 => 17.10
-           * @param string
-           */
-          @Override public void onNext(ByteString string) {
-            Log.d(TAG, string.hex());
-            mTextView_response.setText(string.hex());
-          }
-        });
+      /**
+       * eg: 0x6982 => 17.10
+       * @param string
+       */
+      @Override public void onNext(ByteString string) {
+        Log.d(TAG, string.hex());
+        mTextView_response.setText(string.hex());
+      }
+    });
   }
 
   @OnClick(R.id.get_record) void get_record() {
@@ -116,18 +116,19 @@ public class NfcReaderActivity extends AppCompatActivity {
     onNewIntent(getIntent());
   }
 
+  @Override protected void onResume() {
+    super.onResume();
+    manager.onResume();
+  }
+
   @Override protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
+    manager.onNewIntent(intent);
     get_balance();
   }
 
   @Override protected void onPause() {
     super.onPause();
     manager.onPause();
-  }
-
-  @Override protected void onResume() {
-    super.onResume();
-    manager.onResume();
   }
 }
