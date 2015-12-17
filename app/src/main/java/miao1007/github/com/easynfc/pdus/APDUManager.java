@@ -76,6 +76,10 @@ public class APDUManager {
     });
   }
 
+  /**
+   * wtf... update the intent
+   * @param intent new intent from NFC
+   */
   public void onNewIntent(Intent intent) {
     Log.d(TAG, "onNewIntent:" + intent.toString());
     mActivity.setIntent(intent);
