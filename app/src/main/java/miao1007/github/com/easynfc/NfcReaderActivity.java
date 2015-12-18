@@ -18,9 +18,8 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import miao1007.github.com.easynfc.card.CQEcashCard;
-import miao1007.github.com.easynfc.pdus.APDUManager;
-import miao1007.github.com.utils.LogUtils;
+import com.github.miao1007.lib.easynfc.card.CQEcashCard;
+import com.github.miao1007.lib.easynfc.pdus.APDUManager;
 import okio.ByteString;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -28,7 +27,7 @@ import rx.schedulers.Schedulers;
 
 public class NfcReaderActivity extends AppCompatActivity {
 
-  public static final String TAG = LogUtils.makeLogTag(NfcReaderActivity.class);
+  public static final String TAG = NfcReaderActivity.class.getSimpleName();
 
   //@Bind(R.id.apdu_cla) EditText mEditText_cla;
   //@Bind(R.id.apdu_ans) EditText mEditText_ans;
@@ -40,7 +39,6 @@ public class NfcReaderActivity extends AppCompatActivity {
   @Bind(R.id.apdu_response) TextView mTextView_response;
 
   APDUManager manager;
-  Tag tag;
 
   @OnClick(R.id.get_balance) void get_balance() {
     Log.d(TAG, "get_balance");

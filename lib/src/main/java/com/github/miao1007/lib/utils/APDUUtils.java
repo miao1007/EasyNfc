@@ -6,7 +6,7 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package miao1007.github.com.utils;
+package com.github.miao1007.lib.utils;
 
 import okio.ByteString;
 

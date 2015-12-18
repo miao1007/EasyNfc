@@ -1,1 +1,1 @@
-include ':app', ':nfclib'
+include ':app', ':lib'

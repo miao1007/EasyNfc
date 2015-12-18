@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package miao1007.github.com.utils;
+package com.github.miao1007.lib.utils;
 
 import android.util.Log;
 

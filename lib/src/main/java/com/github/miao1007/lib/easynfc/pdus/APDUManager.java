@@ -1,4 +1,4 @@
-package miao1007.github.com.easynfc.pdus;
+package com.github.miao1007.lib.easynfc.pdus;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -10,9 +10,9 @@ import android.nfc.tech.IsoDep;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresPermission;
 import android.util.Log;
+import com.github.miao1007.lib.utils.LogUtils;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
-import miao1007.github.com.utils.LogUtils;
 import okio.ByteString;
 import rx.Observable;
 import rx.Subscriber;
@@ -53,7 +53,7 @@ public class APDUManager {
 
     this.mActivity = mActivity;
     mAdapter = NfcAdapter.getDefaultAdapter(mActivity);
-    if (mAdapter == null || !mAdapter.isEnabled()) {
+    if (!isNFCadapterOn()) {
       return;
     }
     /**
@@ -67,7 +67,7 @@ public class APDUManager {
     return Observable.create(new Observable.OnSubscribe<NfcAdapter>() {
       @Override public void call(Subscriber<? super NfcAdapter> subscriber) {
         NfcAdapter mNfcAdapter = NfcAdapter.getDefaultAdapter(activity);
-        if (mNfcAdapter == null || !mNfcAdapter.isEnabled()) {
+        if (isNFCadapterOn()) {
           subscriber.onError(new NoSuchElementException("NFC is off"));
         }
         subscriber.onNext(mNfcAdapter);
@@ -78,6 +78,7 @@ public class APDUManager {
 
   /**
    * wtf... update the intent
+   *
    * @param intent new intent from NFC
    */
   public void onNewIntent(Intent intent) {
@@ -85,13 +86,13 @@ public class APDUManager {
     mActivity.setIntent(intent);
   }
 
-  public void onPause() {
+  @RequiresPermission("android.permission.NFC") public void onPause() {
     if (mActivity != null) {
       mAdapter.disableForegroundDispatch(mActivity);
     }
   }
 
-  public void onResume() {
+  @RequiresPermission("android.permission.NFC") public void onResume() {
     if (mActivity != null && mAdapter != null) {
       mAdapter.enableForegroundDispatch(mActivity, pendingIntent, NFC_FILTERS, NFC_TECHLISTS);
     }
@@ -102,13 +103,20 @@ public class APDUManager {
     return getTag().map(IsoDep::get);
   }
 
+  /**
+   * get tag from intent
+   *
+   * @return wrapped tag
+   */
   @NonNull public final Observable<Tag> getTag() {
     Log.d(TAG, "getTag");
     return Observable.create(new Observable.OnSubscribe<Tag>() {
       @Override public void call(Subscriber<? super Tag> subscriber) {
         Intent intent = mActivity.getIntent();
         Log.d(TAG, intent == null ? "null" : intent.toString());
-        if (intent == null || intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) == null) {
+        if (intent == null
+            || intent.getParcelableExtra(NfcAdapter.EXTRA_TAG) == null
+            || !isNFCadapterOn()) {
           subscriber.onError(new Throwable("Intent has no valid action for NFC flag"));
           subscriber.onCompleted();
           return;
@@ -125,7 +133,8 @@ public class APDUManager {
   /**
    * 多Hex的I/O流处理
    */
-  public final Observable<ByteString> trans(final ByteString... byteString) {
+  @RequiresPermission("android.permission.NFC") public final Observable<ByteString> trans(
+      final ByteString... byteString) {
     return Observable.from(byteString).flatMap(new Func1<ByteString, Observable<ByteString>>() {
       @Override public Observable<ByteString> call(ByteString byteString) {
         return trans(byteString);
@@ -133,34 +142,41 @@ public class APDUManager {
     });
   }
 
+  public boolean isNFCadapterOn() {
+    return mAdapter != null && mAdapter.isEnabled();
+  }
+
   public boolean isSuccess(ByteString byteString) {
     return byteString.rangeEquals(0, ByteString.of((byte) 0x90, (byte) 0x00), 0, 2);
   }
 
+  @RequiresPermission("android.permission.NFC")
   public final Observable<ByteString> trans(final ByteString byteString) {
     Log.d(TAG, "trans");
-    return getIsoDep().map(isoDep2 -> {
-      try {
-        if (!isoDep2.isConnected()) {
-          isoDep2.connect();
-        } else {
-          isoDep2.close();
-          isoDep2.connect();
-        }
-        byte[] ret = isoDep2.transceive(byteString.toByteArray());
-        Log.d(TAG, "RX(Hex)=" + byteString.toString());
-        Log.d(TAG, "TX(Hex)=" + ByteString.of(ret).toString());
-        return ret;
-      } catch (Exception e) {
-        e.printStackTrace();
-        return null;
-      } finally {
+    return getIsoDep().flatMap(isoDep -> Observable.create(new Observable.OnSubscribe<ByteString>() {
+      @Override public void call(Subscriber<? super ByteString> subscriber) {
         try {
-          isoDep2.close();
+          if (!isoDep.isConnected()) {
+            isoDep.connect();
+          } else {
+            isoDep.close();
+            isoDep.connect();
+          }
+          byte[] ret = isoDep.transceive(byteString.toByteArray());
+          Log.d(TAG, "RX(Hex)=" + byteString.toString());
+          Log.d(TAG, "TX(Hex)=" + ByteString.of(ret).toString());
+          subscriber.onNext(ByteString.of(ret));
         } catch (Exception e) {
           e.printStackTrace();
+          subscriber.onError(new Throwable("Cannot connect to NFC Adapter"));
+        } finally {
+          try {
+            isoDep.close();
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
         }
       }
-    }).map(ByteString::of);
+    }));
   }
 }

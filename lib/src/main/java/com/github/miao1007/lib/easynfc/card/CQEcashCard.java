@@ -1,6 +1,4 @@
-package miao1007.github.com.easynfc.card;
-
-import java.nio.ByteBuffer;
+package com.github.miao1007.lib.easynfc.card;
 
 /**
  * Created by leon on 7/11/15.
